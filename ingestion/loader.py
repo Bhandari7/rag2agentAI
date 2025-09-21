@@ -3,8 +3,11 @@ from langchain_community.document_loaders import (
     PyPDFLoader,
     TextLoader
 )
+from langchain.chains.combine_documents import create_stuff_documents_chain
 from pathlib import Path
 import os
+from transformation.splitter import text_to_create_document
+
 
 
 def load_from_web(url: str):
@@ -41,3 +44,20 @@ def load_from_source(source_type: str, source: str):
         return load_from_text(source)
     else:
         raise ValueError(f"Unsupported source_type: {source_type}")
+
+def load_multiple_files_from_directory(directory_path, ):       ### refector and use TextLoader for text files
+    # loader = create_stuff_documents_chain(llm,prompt)
+    documents = []
+    directory_path = Path(directory_path)
+    for filename in os.listdir(directory_path):
+        file_path = os.path.join(directory_path, filename)
+        if filename.endswith(".txt"):
+            with open(file_path, 'r') as f:
+                content = f.read()
+            documents.extend(text_to_create_document([content]))
+        if filename.endswith(".pdf"):
+            content = PyPDFLoader(file_path).load()
+            documents.extend(content)
+    return documents
+
+
